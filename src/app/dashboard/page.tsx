@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import "leaflet/dist/leaflet.css";
@@ -111,7 +110,7 @@ const historicalFloodData: FloodEvent[] = [
   },
 ];
 
-export default function IndonesiaFloodMap() {
+export default function DashboardPage() {
   const router = useRouter();
   const [realTimeFloodData, setRealTimeFloodData] = useState<FloodEvent[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -150,6 +149,7 @@ export default function IndonesiaFloodMap() {
 
   return (
     <div className="relative">
+      <h1>Flood Monitoring Dashboard</h1>
       {/* Flood Widgets Section */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
         <FloodAlertWidget

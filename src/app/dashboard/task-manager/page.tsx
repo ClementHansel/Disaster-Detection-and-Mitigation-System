@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
 import React, { useState } from "react";
@@ -86,10 +88,21 @@ const TaskManagerPage: React.FC = () => {
         <SiteModal
           isOpen={isSiteModalOpen}
           onClose={() => setIsSiteModalOpen(false)}
+          onSave={(newSite) =>
+            setSites([...sites, { ...newSite, id: generateId() }])
+          } // ✅ Fix: Add onSave
         />
         <DepartmentModal
           isOpen={isDepartmentModalOpen}
           onClose={() => setIsDepartmentModalOpen(false)}
+          onSave={(newDepartment) =>
+            setDepartments([
+              ...departments,
+              { ...newDepartment, id: generateId() },
+            ])
+          } // ✅ Fix: Add onSave
+          sites={sites} // ✅ Fix: Pass sites
+          department={null} // ✅ Fix: Handle department editing (set to `null` for new)
         />
       </div>
     </DndContext>

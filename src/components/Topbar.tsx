@@ -13,10 +13,10 @@ const Topbar: React.FC = () => {
         {/* Left Side: Company Logo */}
         <div className="flex items-center space-x-4">
           <Image
-            src="/company-logo.png"
+            src="/company_logo.png"
             alt="Company Logo"
-            width={40}
-            height={40}
+            width={120}
+            height={100}
           />
         </div>
         {/* Right Side: Dark Mode Toggle and User Profile */}

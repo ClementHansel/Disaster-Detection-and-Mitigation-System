@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 
@@ -9,9 +8,6 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const toggleSidebar = () => setIsExpanded((prev) => !prev);
-
   return (
     <div className="h-screen relative">
       {/* Fixed Topbar */}
@@ -20,14 +16,11 @@ export default function DashboardLayout({
       </div>
       {/* Fixed Sidebar */}
       <div className="fixed left-0 top-0 h-full z-10">
-        <Sidebar isExpanded={isExpanded} toggleSidebar={toggleSidebar} />
+        {/* Sidebar is always expanded; toggleSidebar is a no-op */}
+        <Sidebar isExpanded={true} toggleSidebar={() => {}} />
       </div>
-      {/* Main content area with margin-left based on sidebar width */}
-      <main
-        className={`pt-16 p-6 overflow-auto transition-all duration-300 z-0 relative ${
-          isExpanded ? "ml-64" : "ml-20"
-        }`}
-      >
+      {/* Main content area with fixed left margin */}
+      <main className="pt-16 p-6 ml-64 overflow-auto transition-all duration-300 relative z-0">
         {children}
       </main>
     </div>
