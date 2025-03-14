@@ -19,17 +19,23 @@ export default function LayoutWrapper({
 
   return (
     <div className="flex h-screen">
+      {/* Sidebar appears on non-home pages */}
       {!isHomePage && (
         <Sidebar isExpanded={isExpanded} toggleSidebar={toggleSidebar} />
       )}
-      <div className="flex flex-col flex-grow">
+      {/* Main content area */}
+      <div
+        className={`flex flex-col flex-grow ${
+          isHomePage ? "justify-center" : ""
+        }`}
+      >
+        {/* Topbar appears on non-home pages */}
         {!isHomePage && <Topbar />}
+
         <main
-          className={
-            isHomePage
-              ? "flex justify-center items-center flex-grow"
-              : "p-4 mt-16 flex-grow"
-          }
+          className={`${
+            isHomePage ? "flex justify-center items-center" : "p-6 mt-16"
+          } flex-grow`}
         >
           {children}
         </main>

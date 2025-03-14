@@ -10,12 +10,12 @@ export default function AuthForm() {
   const toggleForm = () => setIsLogin(!isLogin);
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center min-h-screen ">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="bg-white shadow-lg rounded-lg p-6 w-96"
+        className="  rounded-lg " // Make max width larger
       >
         {isLogin ? (
           <LoginForm toggleForm={toggleForm} />

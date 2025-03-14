@@ -1,21 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import DeleteConfirmModal from "./DeleteConfirmModal"; // Import confirmation modal
+import { Button } from "@/components/ui/button";
+import DeleteConfirmModal from "./DeleteConfirmModal";
+import { Site } from "@/types/task-manager/site";
 
 interface SiteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (site: { name: string; location: string }) => void;
-  onDelete?: (siteName: string) => void;
-  initialData?: { name: string; location: string };
+  onSave: (site: Site) => void;
+  onDelete?: (siteId: string) => void;
+  site?: Site | null;
 }
 
 const SiteModal: React.FC<SiteModalProps> = ({
@@ -23,19 +24,30 @@ const SiteModal: React.FC<SiteModalProps> = ({
   onClose,
   onSave,
   onDelete,
-  initialData,
+  site,
 }) => {
-  const [siteData, setSiteData] = useState(
-    initialData || { name: "", location: "" }
-  );
+  const [formData, setFormData] = useState<Site>({
+    id: "",
+    name: "",
+    location: "",
+    description: "",
+  });
+
   const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
-  const handleDelete = () => {
-    if (onDelete && initialData) {
-      onDelete(initialData.name);
-      setDeleteConfirmOpen(false);
-      onClose();
+  // Ensure the formData is updated when `site` prop changes
+  useEffect(() => {
+    if (site) {
+      setFormData(site); // Update state with site data if editing
+    } else {
+      setFormData({ id: "", name: "", location: "", description: "" }); // Reset state for new site
     }
+  }, [site]); // Trigger this effect when the `site` prop changes
+
+  const handleSave = () => {
+    // Pass the updated formData to the parent via onSave
+    onSave({ ...formData, id: formData.id || crypto.randomUUID() });
+    onClose();
   };
 
   return (
@@ -43,23 +55,28 @@ const SiteModal: React.FC<SiteModalProps> = ({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{initialData ? "Edit Site" : "Add Site"}</DialogTitle>
+            <DialogTitle>{site ? "Edit Site" : "Create Site"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              name="name"
-              placeholder="Site Name"
-              value={siteData.name}
+              placeholder="Name"
+              value={formData.name}
               onChange={(e) =>
-                setSiteData({ ...siteData, name: e.target.value })
+                setFormData({ ...formData, name: e.target.value })
               }
             />
             <Input
-              name="location"
               placeholder="Location"
-              value={siteData.location}
+              value={formData.location}
               onChange={(e) =>
-                setSiteData({ ...siteData, location: e.target.value })
+                setFormData({ ...formData, location: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
               }
             />
           </div>
@@ -67,27 +84,25 @@ const SiteModal: React.FC<SiteModalProps> = ({
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            {initialData && onDelete && (
+            {site && onDelete && (
               <Button
                 variant="destructive"
-                onClick={() => setDeleteConfirmOpen(true)}
+                onClick={() => setDeleteConfirmOpen(true)} // Open delete confirmation modal
               >
-                Delete Site
+                Delete
               </Button>
             )}
-            <Button onClick={() => onSave(siteData)}>
-              {initialData ? "Update" : "Save"}
-            </Button>
+            <Button onClick={handleSave}>{site ? "Update" : "Create"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete confirmation modal */}
       <DeleteConfirmModal
         isOpen={isDeleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
-        onConfirm={handleDelete}
-        itemName={siteData.name} // ✅ Now correctly passing itemName
+        onConfirm={() => onDelete?.(formData.id)} // Trigger onDelete on confirmation
+        itemName={formData.name}
       />
     </>
   );

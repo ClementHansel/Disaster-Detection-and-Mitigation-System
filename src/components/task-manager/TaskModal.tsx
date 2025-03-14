@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,46 +8,180 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-// Define Task Type
-interface Task {
-  id: string;
-  content: string;
-}
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Task } from "@/types/task-manager/task";
+import { Site } from "@/types/task-manager/site";
+import { Department } from "@/types/task-manager/department";
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (task: Task) => void; // Updated to accept Task instead of string
+  onSave: (task: Task) => void;
+  task?: Task | null;
+  sites: Site[];
+  departments: Department[];
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave }) => {
-  const [taskContent, setTaskContent] = useState("");
+const TaskModal: React.FC<TaskModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  task,
+  sites,
+  departments,
+}) => {
+  const [formData, setFormData] = useState<Task>({
+    id: "",
+    title: "",
+    description: "",
+    siteId: "",
+    departmentId: "",
+    assignedTo: "",
+    status: "Pending",
+    priority: "Medium",
+    dueDate: "",
+    createdAt: new Date().toISOString(),
+  });
+
+  useEffect(() => {
+    if (task) {
+      setFormData(task);
+    } else {
+      setFormData({
+        id: "",
+        title: "",
+        description: "",
+        siteId: "",
+        departmentId: "",
+        assignedTo: "",
+        status: "Pending",
+        priority: "Medium",
+        dueDate: "",
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }, [task]);
 
   const handleSave = () => {
-    if (taskContent.trim()) {
-      const newTask: Task = {
-        id: crypto.randomUUID(), // Generate a unique ID
-        content: taskContent,
-      };
-      onSave(newTask);
-      setTaskContent("");
-      onClose();
+    // Prevent saving if required fields are missing
+    if (!formData.title || !formData.siteId || !formData.departmentId) {
+      return;
     }
+    onSave({ ...formData, id: formData.id || crypto.randomUUID() });
+    onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle>{task ? "Edit Task" : "Create New Task"}</DialogTitle>
         </DialogHeader>
-        <Input
-          type="text"
-          placeholder="Enter task description"
-          value={taskContent}
-          onChange={(e) => setTaskContent(e.target.value)}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            placeholder="Title"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
+          />
+          <Input
+            placeholder="Description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+          />
+          <Select
+            value={formData.siteId || ""}
+            onValueChange={(value) =>
+              setFormData({ ...formData, siteId: value })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Site" />
+            </SelectTrigger>
+            <SelectContent>
+              {sites.map((site) => (
+                <SelectItem key={site.id} value={site.id}>
+                  {site.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={formData.departmentId || ""}
+            onValueChange={(value) =>
+              setFormData({ ...formData, departmentId: value })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Department" />
+            </SelectTrigger>
+            <SelectContent>
+              {departments.map((dept) => (
+                <SelectItem key={dept.id} value={dept.id}>
+                  {dept.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={formData.status}
+            onValueChange={(value) =>
+              setFormData({ ...formData, status: value as Task["status"] })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {["Pending", "In Progress", "Completed"].map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={formData.priority}
+            onValueChange={(value) =>
+              setFormData({ ...formData, priority: value as Task["priority"] })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
+            <SelectContent>
+              {["Low", "Medium", "High"].map((priority) => (
+                <SelectItem key={priority} value={priority}>
+                  {priority}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            type="date"
+            placeholder="Due Date"
+            value={formData.dueDate}
+            onChange={(e) =>
+              setFormData({ ...formData, dueDate: e.target.value })
+            }
+          />
+          <Input
+            placeholder="Assigned To"
+            value={formData.assignedTo}
+            onChange={(e) =>
+              setFormData({ ...formData, assignedTo: e.target.value })
+            }
+          />
+        </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel

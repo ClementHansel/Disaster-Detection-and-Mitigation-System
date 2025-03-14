@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import AutoPumps from "./pumps";
+import AutoPumps from "./Pumps";
 import AutoSluiceGates from "./SluiceGates"; // Ensure the file name is exactly "SluiceGates.tsx"
 import Controllers from "./Controllers";
 import DAQComponent from "./DAQ";

@@ -31,35 +31,37 @@ export default function RegisterForm({
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-gray-700 text-center mb-4">
-          Register
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h2 className="text-3xl font-semibold text-gray-800 text-center mb-6">
+          Create an Account
         </h2>
-        <form onSubmit={handleRegister} className="flex flex-col gap-4">
-          <input
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value={formData.firstName}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value={formData.lastName}
-            onChange={handleChange}
-            required
-          />
+        <form onSubmit={handleRegister} className="flex flex-col gap-6">
+          <div className="flex gap-4">
+            <input
+              type="text"
+              name="firstName"
+              placeholder="First Name"
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+            />
+          </div>
           <input
             type="email"
             name="email"
             placeholder="Email"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
             value={formData.email}
             onChange={handleChange}
             required
@@ -69,7 +71,7 @@ export default function RegisterForm({
               type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 pr-10"
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 pr-10 transition"
               value={formData.password}
               onChange={handleChange}
               required
@@ -86,14 +88,14 @@ export default function RegisterForm({
             type="password"
             name="confirmPassword"
             placeholder="Confirm Password"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
             value={formData.confirmPassword}
             onChange={handleChange}
             required
           />
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 transition"
+            className="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 transition duration-200"
           >
             Register
           </button>

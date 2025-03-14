@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { Task } from "@/types/task-manager/task";
 import { Site } from "@/types/task-manager/site";
 import { Department } from "@/types/task-manager/department";
@@ -8,138 +9,90 @@ import { mockTasks } from "@/data/mockTasks";
 import { mockSites } from "@/data/mockSites";
 import { mockDepartments } from "@/data/mockDepartments";
 import { Button } from "@/components/ui/button";
-import SiteModal from "@/components/task-manager/SiteModal";
-import TaskList from "@/components/task-manager/TaskList";
+import TaskBoard from "@/components/task-manager/TaskBoard";
 import SiteList from "@/components/task-manager/SiteList";
 import DepartmentList from "@/components/task-manager/DepartmentList";
-import DepartmentModal from "@/components/task-manager/DepartmentModal";
 import TaskModal from "@/components/task-manager/TaskModal";
+import SiteModal from "@/components/task-manager/SiteModal";
+import DepartmentModal from "@/components/task-manager/DepartmentModal";
+
+const generateId = () => crypto.randomUUID();
 
 const TaskManagerPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>(mockTasks);
   const [sites, setSites] = useState<Site[]>(mockSites);
   const [departments, setDepartments] = useState<Department[]>(mockDepartments);
-  const [isSiteModalOpen, setIsSiteModalOpen] = useState(false);
-  const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isSiteModalOpen, setIsSiteModalOpen] = useState(false);
+  const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
 
-  // Get site name by siteId
-  const getSiteName = (siteId: string) => {
-    return sites.find((site) => site.id === siteId)?.name || "Unknown Site";
-  };
-
-  // Get department name by departmentId
-  const getDepartmentName = (departmentId: string) => {
-    return (
-      departments.find((department) => department.id === departmentId)?.name ||
-      "Unknown Department"
-    );
-  };
-
-  const handleDeleteSite = (siteId: string) => {
-    setSites(sites.filter((site) => site.id !== siteId));
+  const handleSaveTask = (task: Task) => {
     setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.siteId === siteId ? { ...task, siteId: "" } : task
-      )
-    );
-  };
-
-  const handleDeleteDepartment = (departmentId: string) => {
-    setDepartments(
-      departments.filter((department) => department.id !== departmentId)
-    );
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.departmentId === departmentId
-          ? { ...task, departmentId: "" }
-          : task
-      )
-    );
-  };
-
-  const handleEditTask = (task: Task) => {
-    setSelectedTask(task);
-    setIsTaskModalOpen(true);
-  };
-
-  const handleSaveTask = (updatedTask: Task) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((t) => (t.id === updatedTask.id ? updatedTask : t))
+      task.id
+        ? prevTasks.map((t) => (t.id === task.id ? task : t))
+        : [...prevTasks, { ...task, id: generateId() }]
     );
     setIsTaskModalOpen(false);
+    setSelectedTask(null);
   };
 
   const handleDeleteTask = (taskId: string) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    setTasks(tasks.filter((t) => t.id !== taskId));
   };
 
-  const handleSaveSite = (newSite: Site) => {
-    setSites((prevSites) => [...prevSites, newSite]);
-    setIsSiteModalOpen(false);
-  };
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
 
-  const handleSaveDepartment = (newDepartment: Department) => {
-    setDepartments((prevDepartments) => [...prevDepartments, newDepartment]);
-    setIsDepartmentModalOpen(false);
+    const taskId = active.id.toString();
+    const departmentId = over.id.toString();
+
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, departmentId } : task
+      )
+    );
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Task Manager</h1>
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className="p-6 space-y-6">
+        <h1 className="text-2xl font-bold">Task Manager</h1>
 
-      {/* Task List Section */}
-      <TaskList
-        tasks={tasks}
-        onEdit={handleEditTask}
-        onDelete={handleDeleteTask}
-        getSiteName={getSiteName}
-        getDepartmentName={getDepartmentName}
-      />
+        <div className="flex gap-4">
+          <Button onClick={() => setIsTaskModalOpen(true)}>Add Task</Button>
+          <Button onClick={() => setIsSiteModalOpen(true)}>Add Site</Button>
+          <Button onClick={() => setIsDepartmentModalOpen(true)}>
+            Add Department
+          </Button>
+        </div>
 
-      {/* Site Management Section */}
-      <SiteList sites={sites} onDeleteSite={handleDeleteSite} />
-      <Button className="mt-2" onClick={() => setIsSiteModalOpen(true)}>
-        Add Site
-      </Button>
+        <TaskBoard
+          tasks={tasks}
+          departments={departments}
+          sites={sites}
+          onEditTask={setSelectedTask}
+        />
 
-      {/* Site Modal */}
-      <SiteModal
-        isOpen={isSiteModalOpen}
-        onClose={() => setIsSiteModalOpen(false)}
-        onSave={handleSaveSite}
-      />
-
-      {/* Department Management Section */}
-      <DepartmentList
-        departments={departments}
-        onDelete={handleDeleteDepartment}
-        onEdit={() => {}}
-      />
-      <Button className="mt-2" onClick={() => setIsDepartmentModalOpen(true)}>
-        Add Department
-      </Button>
-
-      {/* Department Modal */}
-      <DepartmentModal
-        isOpen={isDepartmentModalOpen}
-        onClose={() => setIsDepartmentModalOpen(false)}
-        onSave={handleSaveDepartment}
-      />
-
-      {/* Task Modal for Editing */}
-      {selectedTask && (
         <TaskModal
           isOpen={isTaskModalOpen}
           onClose={() => setIsTaskModalOpen(false)}
-          task={selectedTask}
           onSave={handleSaveTask}
           sites={sites}
           departments={departments}
+          task={selectedTask}
         />
-      )}
-    </div>
+        <SiteModal
+          isOpen={isSiteModalOpen}
+          onClose={() => setIsSiteModalOpen(false)}
+        />
+        <DepartmentModal
+          isOpen={isDepartmentModalOpen}
+          onClose={() => setIsDepartmentModalOpen(false)}
+        />
+      </div>
+    </DndContext>
   );
 };
 

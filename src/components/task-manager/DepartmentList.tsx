@@ -1,45 +1,20 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import DepartmentModal from "@/components/task-manager/DepartmentModal";
+import { Department } from "@/types/task-manager/department";
 
-interface Department {
-  id: string;
-  name: string;
+interface DepartmentListProps {
+  departments: Department[];
+  getSiteName: (siteId: string) => string;
+  onEdit: (department: Department) => void;
+  onDelete: (departmentId: string) => void;
 }
 
-const defaultDepartments: Department[] = [
-  { id: "1", name: "Engineering Department" },
-  { id: "2", name: "IT Department" },
-  { id: "3", name: "Operational Department" },
-  { id: "4", name: "Security Department" },
-];
-
-const DepartmentList: React.FC = () => {
-  const [departments, setDepartments] =
-    useState<Department[]>(defaultDepartments);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editDepartment, setEditDepartment] = useState<Department | null>(null);
-
-  const handleSaveDepartment = (department: Department) => {
-    if (editDepartment) {
-      // Editing existing department
-      setDepartments(
-        departments.map((dept) =>
-          dept.id === department.id ? department : dept
-        )
-      );
-    } else {
-      // Adding a new department
-      setDepartments([...departments, department]);
-    }
-    setEditDepartment(null);
-    setIsModalOpen(false);
-  };
-
-  const handleDeleteDepartment = (departmentId: string) => {
-    setDepartments(departments.filter((dept) => dept.id !== departmentId));
-  };
-
+const DepartmentList: React.FC<DepartmentListProps> = ({
+  departments,
+  getSiteName,
+  onEdit,
+  onDelete,
+}) => {
   return (
     <div className="bg-white shadow-md rounded-lg p-4">
       <h2 className="text-lg font-semibold mb-2">Departments</h2>
@@ -49,19 +24,14 @@ const DepartmentList: React.FC = () => {
             key={department.id}
             className="flex justify-between items-center p-2 border-b"
           >
-            {department.name}
+            <span>
+              {department.name} ({getSiteName(department.siteId)})
+            </span>
             <div>
-              <Button
-                onClick={() => {
-                  setEditDepartment(department);
-                  setIsModalOpen(true);
-                }}
-              >
-                Edit
-              </Button>
+              <Button onClick={() => onEdit(department)}>Edit</Button>
               <Button
                 variant="destructive"
-                onClick={() => handleDeleteDepartment(department.id)}
+                onClick={() => onDelete(department.id)}
                 className="ml-2"
               >
                 Delete
@@ -70,23 +40,6 @@ const DepartmentList: React.FC = () => {
           </li>
         ))}
       </ul>
-      <Button
-        className="mt-2"
-        onClick={() => {
-          setEditDepartment(null);
-          setIsModalOpen(true);
-        }}
-      >
-        Add Department
-      </Button>
-
-      {/* Department Modal */}
-      <DepartmentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveDepartment}
-        department={editDepartment}
-      />
     </div>
   );
 };
