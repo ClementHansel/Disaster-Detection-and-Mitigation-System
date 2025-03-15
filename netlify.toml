@@ -1,0 +1,9 @@
+[build]
+  # Run npm install with legacy-peer-deps before building
+  command = "npm install --legacy-peer-deps && npm run build"
+  # Specify the directory to publish (for Next.js this is typically the .next folder or a custom output)
+  publish = ".next"
+
+[build.environment]
+  # Optionally, specify Node version or other environment variables
+  NODE_VERSION = "22.14.0"
