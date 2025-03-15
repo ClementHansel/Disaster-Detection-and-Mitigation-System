@@ -1,11 +1,10 @@
-// src/components/IndonesiaMap.tsx
 "use client";
 
 import { MapContainer, TileLayer, LayersControl, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useRouter } from "next/navigation";
 import type { Feature, Polygon } from "geojson";
-import { floodExtentGeoJSON } from "@/data/floods/mockGeoJSON";
+import { floodGeoJSON } from "@/data/floods/mockGeoJSON";
 
 interface IndonesiaMapProps {
   children?: React.ReactNode;
@@ -40,7 +39,7 @@ export default function IndonesiaMap({
     "stroke-opacity": number;
   };
 
-  // onEachFeature callback with explicit types for the flood overlay
+  // onEachFloodFeature: Binds a popup to each flood feature and adds event handlers.
   const onEachFloodFeature = (
     feature: Feature<Polygon, FloodProperties>,
     layer: L.Layer
@@ -54,13 +53,15 @@ export default function IndonesiaMap({
     layer.bindPopup(popupContent);
     layer.on({
       mouseover: (e: L.LeafletMouseEvent) => {
+        console.log("Mouseover at:", e.latlng);
         e.target.openPopup();
       },
       mouseout: (e: L.LeafletMouseEvent) => {
+        console.log("Mouseout at:", e.latlng);
         e.target.closePopup();
       },
       click: (e: L.LeafletMouseEvent) => {
-        console.log("Flood overlay clicked at:", e.latlng);
+        console.log("Click event at:", e.latlng);
         router.push(
           `/dashboard/floods/${feature.properties.name.toLowerCase()}`
         );
@@ -86,10 +87,10 @@ export default function IndonesiaMap({
             attribution="&copy; OpenStreetMap contributors"
           />
         </BaseLayer>
-        <BaseLayer name="Topographic/Contour">
+        <BaseLayer name="OpenTopoMap">
           <TileLayer
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}"
-            attribution="Tiles &copy; Esri"
+            url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+            attribution="Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)"
           />
         </BaseLayer>
         <BaseLayer name="Satellite View">
@@ -107,10 +108,7 @@ export default function IndonesiaMap({
         </Overlay>
         {/* Custom Thematic Layer: Flood Extent */}
         <Overlay name="Flood Extent">
-          <GeoJSON
-            data={floodExtentGeoJSON}
-            onEachFeature={onEachFloodFeature}
-          />
+          <GeoJSON data={floodGeoJSON} onEachFeature={onEachFloodFeature} />
         </Overlay>
       </LayersControl>
       {children}
