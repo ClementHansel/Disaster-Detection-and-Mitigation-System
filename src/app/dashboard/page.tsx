@@ -1,117 +1,22 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import FloodNotification from "@/components/FloodNotification";
+
+// Import modular components and data
+import IndonesiaFloodMap from "@/components/maps/IndonesiaFloodMap";
 import FloodAlertWidget from "@/components/widgets/FloodAlertWidget";
 import AlertLevelWidget from "@/components/widgets/AlertLevelWidget";
 import ImpactedAreaWidget from "@/components/widgets/ImpactedAreaWidget";
 import WaterFlowWidget from "@/components/widgets/WaterFlowWidget";
 import RainfallWidget from "@/components/widgets/RainfallWidget";
+import FloodNotification from "@/components/FloodNotification";
 
-type FloodSeverity = "low" | "moderate" | "severe";
-
-interface FloodEvent {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  floodSeverity: FloodSeverity;
-  radius_km: number;
-  impactedArea: number;
-  description: string;
-}
-
-const fetchRealTimeFloodData = (): FloodEvent[] => [
-  {
-    id: "jakarta",
-    name: "Jakarta",
-    lat: -6.2088,
-    lng: 106.8456,
-    floodSeverity: "severe",
-    radius_km: 5,
-    impactedArea: 5,
-    description: "Heavy flooding in downtown areas.",
-  },
-  {
-    id: "surabaya",
-    name: "Surabaya",
-    lat: -7.2504,
-    lng: 112.7688,
-    floodSeverity: "moderate",
-    radius_km: 3,
-    impactedArea: 3,
-    description: "Rising water levels in low-lying zones.",
-  },
-  {
-    id: "bandung",
-    name: "Bandung",
-    lat: -6.9147,
-    lng: 107.6098,
-    floodSeverity: "low",
-    radius_km: 2,
-    impactedArea: 2,
-    description: "Minor flooding detected near the river.",
-  },
-];
-
-const historicalFloodData: FloodEvent[] = [
-  {
-    id: "jakarta-2023",
-    name: "Jakarta",
-    lat: -6.2088,
-    lng: 106.8456,
-    floodSeverity: "severe",
-    radius_km: 6,
-    impactedArea: 6,
-    description: "Severe flooding in early 2023.",
-  },
-  {
-    id: "surabaya-2022",
-    name: "Surabaya",
-    lat: -7.2504,
-    lng: 112.7688,
-    floodSeverity: "moderate",
-    radius_km: 4,
-    impactedArea: 4,
-    description: "Moderate flooding in late 2022.",
-  },
-  {
-    id: "bandung-2021",
-    name: "Bandung",
-    lat: -6.9147,
-    lng: 107.6098,
-    floodSeverity: "low",
-    radius_km: 3,
-    impactedArea: 3,
-    description: "Light flooding in early 2021.",
-  },
-  {
-    id: "medan-2020",
-    name: "Medan",
-    lat: 3.5952,
-    lng: 98.6722,
-    floodSeverity: "moderate",
-    radius_km: 4,
-    impactedArea: 4,
-    description: "Moderate flooding in Medan during 2020.",
-  },
-  {
-    id: "bali-2019",
-    name: "Bali",
-    lat: -8.4095,
-    lng: 115.1889,
-    floodSeverity: "severe",
-    radius_km: 7,
-    impactedArea: 7,
-    description: "Severe coastal flooding in Bali in 2019.",
-  },
-];
+// Import types and data from modules
+import { FloodEvent, FloodSeverity } from "@/types/floods";
+import { fetchRealTimeFloodData } from "@/data/floods/mockRealtime";
+import { mockHistoricalFloodData } from "@/data/floods/mockHistorical";
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [realTimeFloodData, setRealTimeFloodData] = useState<FloodEvent[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [severityFilter, setSeverityFilter] = useState<FloodSeverity | "all">(
@@ -122,26 +27,7 @@ export default function DashboardPage() {
     setRealTimeFloodData(fetchRealTimeFloodData());
   }, []);
 
-  const getPulseMarkerIcon = (severity: FloodSeverity) => {
-    const color =
-      severity === "severe"
-        ? "bg-red-500"
-        : severity === "moderate"
-        ? "bg-orange-500"
-        : "bg-yellow-500";
-    return L.divIcon({
-      className: "relative flex items-center justify-center",
-      html: `
-        <div class="w-6 h-6 rounded-full ${color} shadow-md relative">
-          <div class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${color}"></div>
-        </div>
-      `,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
-    });
-  };
-
-  const filteredHistoricalData = historicalFloodData.filter(
+  const filteredHistoricalData = mockHistoricalFloodData.filter(
     (flood) =>
       (severityFilter === "all" || flood.floodSeverity === severityFilter) &&
       flood.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -150,7 +36,7 @@ export default function DashboardPage() {
   return (
     <div className="relative">
       <h1>Flood Monitoring Dashboard</h1>
-      {/* Flood Widgets Section */}
+      {/* Widgets Section */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
         <FloodAlertWidget
           data={realTimeFloodData.map((flood) => ({
@@ -191,38 +77,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Flood Map Section */}
-      <MapContainer
-        center={[-6.2, 107.0]}
-        zoom={6}
-        style={{ height: "500px", width: "100%" }}
-        className="rounded-lg shadow-md"
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        {realTimeFloodData.map((flood) => (
-          <Marker
-            key={flood.id}
-            position={[flood.lat, flood.lng]}
-            icon={getPulseMarkerIcon(flood.floodSeverity)}
-            eventHandlers={{
-              mouseover: (e) => e.target.openPopup(),
-              mouseout: (e) => e.target.closePopup(),
-              click: () => router.push(`/dashboard/floods/${flood.id}`),
-            }}
-          >
-            <Popup>
-              <div className="text-sm">
-                <strong>{flood.name}</strong>
-                <br />
-                Severity: {flood.floodSeverity}
-                <br />
-                Impacted Area: {flood.radius_km} km radius
-                <br />
-                {flood.description}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      <IndonesiaFloodMap />
 
       {/* Flood Notification Section */}
       <FloodNotification floodData={realTimeFloodData} />
