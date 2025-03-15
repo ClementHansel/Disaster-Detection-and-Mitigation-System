@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import LoginForm from "@/components/LoginForm";
-import RegisterForm from "@/components/RegistrationForm";
+import LoginForm from "@/components/auth/LoginForm";
+import RegisterForm from "@/components/auth/RegistrationForm";
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);

@@ -1,49 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
+import {
+  mockSensorsNotifications,
+  SensorNotification,
+} from "@/data/sensors/mockSensorsNotifications";
 
-const mockNotifications = Array.from({ length: 25 }, (_, i) => {
-  const messages = [
-    {
-      message: "Sensor 3 requires calibration",
-      categories: ["sensor status", "task status"],
-    },
-    {
-      message: "Site A is offline",
-      categories: ["site status", "connection status"],
-    },
-    {
-      message: "Camera 5 is back online",
-      categories: ["camera status", "connection status", "task status"],
-    },
-    { message: "Task completed: System check", categories: ["task status"] },
-    {
-      message: "Connection lost to Server 2",
-      categories: ["connection status", "site status"],
-    },
-    {
-      message: "New update available for Camera 3",
-      categories: ["camera status", "task status"],
-    },
-  ];
-
-  const data = messages[i % messages.length];
-
-  return {
-    id: i + 1,
-    message: data.message,
-    type: ["error", "warning", "success"][i % 3],
-    categories: data.categories,
-    site: `Site ${String.fromCharCode(65 + (i % 5))}`,
-    timestamp: `2025-03-${String(11 - (i % 10)).padStart(2, "0")} ${
-      10 + (i % 10)
-    }:30`,
-  };
-}).sort(
-  (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-);
-
-export default function Notification() {
+export default function Notifications() {
   const [expanded, setExpanded] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
@@ -55,8 +18,8 @@ export default function Notification() {
     }
   }, []);
 
-  const filteredNotifications = mockNotifications.filter(
-    (notif) =>
+  const filteredNotifications = mockSensorsNotifications.filter(
+    (notif: SensorNotification) =>
       (filter === "all" || notif.categories.includes(filter)) &&
       notif.message.toLowerCase().includes(search.toLowerCase())
   );

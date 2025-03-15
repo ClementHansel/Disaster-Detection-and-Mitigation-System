@@ -1,20 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 
-// Import modular components and data
-import IndonesiaFloodMap from "@/components/maps/IndonesiaFloodMap";
+// Import modular widget components
 import FloodAlertWidget from "@/components/widgets/FloodAlertWidget";
 import AlertLevelWidget from "@/components/widgets/AlertLevelWidget";
 import ImpactedAreaWidget from "@/components/widgets/ImpactedAreaWidget";
 import WaterFlowWidget from "@/components/widgets/WaterFlowWidget";
 import RainfallWidget from "@/components/widgets/RainfallWidget";
-import FloodNotification from "@/components/FloodNotification";
 
-// Import types and data from modules
+// Import Flood Notification component
+import FloodNotification from "@/components/floods/FloodNotification";
+
+// Import types and mock data for flood information
 import { FloodEvent, FloodSeverity } from "@/types/floods";
 import { fetchRealTimeFloodData } from "@/data/floods/mockRealtime";
 import { mockHistoricalFloodData } from "@/data/floods/mockHistorical";
+
+// Lazy-load the IndonesiaFloodMap component to improve performance and avoid SSR issues
+const IndonesiaFloodMap = dynamic(
+  () => import("@/components/maps/IndonesiaFloodMap"),
+  { ssr: false, loading: () => <p>Loading map...</p> }
+);
 
 export default function DashboardPage() {
   const [realTimeFloodData, setRealTimeFloodData] = useState<FloodEvent[]>([]);
@@ -36,6 +44,7 @@ export default function DashboardPage() {
   return (
     <div className="relative">
       <h1>Flood Monitoring Dashboard</h1>
+
       {/* Widgets Section */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
         <FloodAlertWidget
@@ -77,7 +86,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Flood Map Section */}
-      <IndonesiaFloodMap />
+      <div className="mb-6">
+        <IndonesiaFloodMap />
+      </div>
 
       {/* Flood Notification Section */}
       <FloodNotification floodData={realTimeFloodData} />

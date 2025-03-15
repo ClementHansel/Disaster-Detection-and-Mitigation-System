@@ -1,8 +1,11 @@
 // src/components/IndonesiaMap.tsx
 "use client";
 
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, LayersControl, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { useRouter } from "next/navigation";
+import type { Feature, Polygon } from "geojson";
+import { floodExtentGeoJSON } from "@/data/floods/mockGeoJSON";
 
 interface IndonesiaMapProps {
   children?: React.ReactNode;
@@ -17,14 +20,99 @@ export default function IndonesiaMap({
   zoom = 6,
   style = { height: "500px", width: "100%" },
 }: IndonesiaMapProps) {
+  const router = useRouter();
+
+  // Approximate bounds for Indonesia (SW and NE corners)
+  const indonesiaBounds: [[number, number], [number, number]] = [
+    [-11, 95],
+    [6, 141],
+  ];
+
+  const { BaseLayer, Overlay } = LayersControl;
+
+  // Define a proper type for our flood feature properties.
+  type FloodProperties = {
+    name: string;
+    fill: string;
+    "fill-opacity": number;
+    stroke: string;
+    "stroke-width": number;
+    "stroke-opacity": number;
+  };
+
+  // onEachFeature callback with explicit types for the flood overlay
+  const onEachFloodFeature = (
+    feature: Feature<Polygon, FloodProperties>,
+    layer: L.Layer
+  ): void => {
+    const popupContent = `
+      <div class="text-sm">
+        <strong>${feature.properties.name}</strong><br />
+        Flood extent area
+      </div>
+    `;
+    layer.bindPopup(popupContent);
+    layer.on({
+      mouseover: (e: L.LeafletMouseEvent) => {
+        e.target.openPopup();
+      },
+      mouseout: (e: L.LeafletMouseEvent) => {
+        e.target.closePopup();
+      },
+      click: (e: L.LeafletMouseEvent) => {
+        console.log("Flood overlay clicked at:", e.latlng);
+        router.push(
+          `/dashboard/floods/${feature.properties.name.toLowerCase()}`
+        );
+      },
+    });
+  };
+
   return (
     <MapContainer
       center={center}
       zoom={zoom}
+      minZoom={5} // Prevent zooming out too far
       style={style}
       className="rounded-lg shadow-md"
+      maxBounds={indonesiaBounds}
+      maxBoundsViscosity={1.0}
     >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <LayersControl position="topright">
+        {/* Base Layers */}
+        <BaseLayer checked name="Street View">
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution="&copy; OpenStreetMap contributors"
+          />
+        </BaseLayer>
+        <BaseLayer name="Topographic/Contour">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}"
+            attribution="Tiles &copy; Esri"
+          />
+        </BaseLayer>
+        <BaseLayer name="Satellite View">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            attribution="Tiles &copy; Esri"
+          />
+        </BaseLayer>
+        {/* Overlay: Hybrid Labels */}
+        <Overlay checked name="Hybrid Labels">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+            attribution="&copy; Esri"
+          />
+        </Overlay>
+        {/* Custom Thematic Layer: Flood Extent */}
+        <Overlay name="Flood Extent">
+          <GeoJSON
+            data={floodExtentGeoJSON}
+            onEachFeature={onEachFloodFeature}
+          />
+        </Overlay>
+      </LayersControl>
       {children}
     </MapContainer>
   );
