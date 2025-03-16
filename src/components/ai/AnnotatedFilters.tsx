@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface FiltersType {
   site: string;
@@ -22,12 +22,17 @@ export default function AnnotatedFilters({
   availableSites,
   availableSensors,
 }: AnnotatedFiltersProps) {
-  const [localFilters, setLocalFilters] = useState(filters);
+  const [localFilters, setLocalFilters] = useState<FiltersType>(filters);
+
+  // Ensure that local state is updated when the parent filters change
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
 
   const handleFilterChange = (field: keyof FiltersType, value: string) => {
     const updatedFilters = { ...localFilters, [field]: value };
     setLocalFilters(updatedFilters);
-    onFilterChange(updatedFilters);
+    onFilterChange(updatedFilters); // Pass the updated filters to the parent
   };
 
   return (

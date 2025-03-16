@@ -1,4 +1,4 @@
-// src/components/cortheaAI/ChatWindow.tsx
+"use client";
 
 import React, { useEffect, useRef } from "react";
 import { Message } from "@/types/cortheaAI/chatTypes";
@@ -20,18 +20,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading }) => {
   }, [messages]);
 
   return (
-    <div className="flex flex-col space-y-4 h-full overflow-auto px-4 py-2">
-      {/* Displaying all messages */}
-      {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
-      ))}
+    <div className="flex flex-col h-full">
+      {/* The message container with scrollable area */}
+      <div className="flex-1 overflow-y-auto px-4 py-2">
+        {/* Displaying all messages */}
+        {messages.map((message) => (
+          <MessageBubble key={message.id} message={message} />
+        ))}
 
-      {/* Displaying loading indicator */}
-      {isLoading && (
-        <div className="flex justify-center items-center py-2">
-          <span className="text-gray-500">AI is thinking...</span>
-        </div>
-      )}
+        {/* Displaying loading indicator */}
+        {isLoading && (
+          <div className="flex justify-center items-center py-2">
+            <span className="text-gray-500">AI is thinking...</span>
+          </div>
+        )}
+      </div>
 
       {/* Scroll to the latest message */}
       <div ref={endOfMessagesRef} />

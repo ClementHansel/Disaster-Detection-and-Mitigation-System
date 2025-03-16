@@ -1,24 +1,13 @@
 import { useState } from "react";
 import AnnotatedCard from "./AnnotatedCard";
 import AnnotatedButtons from "./AnnotatedButtons";
-import { getFilteredAnnotations } from "@/lib/ai/aiDataUtils";
 import { Annotation } from "@/types/ai/annotation";
 
-interface Filters {
-  site: string;
-  sensor: string;
-  dateFrom: string;
-  dateTo: string;
-  timeFrom: string;
-  timeTo: string;
-}
-
 interface AnnotatedListProps {
-  filters: Filters;
+  data: Annotation[]; // Receive filtered data directly
 }
 
-export default function AnnotatedList({ filters }: AnnotatedListProps) {
-  const annotations: Annotation[] = getFilteredAnnotations(filters);
+export default function AnnotatedList({ data }: AnnotatedListProps) {
   const [selectedAnnotations, setSelectedAnnotations] = useState<Set<string>>(
     new Set()
   );
@@ -40,16 +29,16 @@ export default function AnnotatedList({ filters }: AnnotatedListProps) {
       "Deleting selected annotations:",
       Array.from(selectedAnnotations)
     );
-    // Implement deletion logic
+    // Implement deletion logic here
     setSelectedAnnotations(new Set()); // Clear selection after deletion
   };
 
   return (
     <div className="p-4 bg-white shadow rounded-lg">
       <h2 className="font-bold mb-2">Saved Annotations</h2>
-      {annotations.length > 0 ? (
+      {data.length > 0 ? (
         <div className="grid gap-4">
-          {annotations.map((annotation) => (
+          {data.map((annotation) => (
             <AnnotatedCard
               key={annotation.id}
               annotation={annotation}

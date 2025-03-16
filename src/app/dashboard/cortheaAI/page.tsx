@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import ChatHeader from "@/components/cortheaAI/ChatHeader";
 import ChatWindow from "@/components/cortheaAI/ChatWindow";
@@ -44,21 +45,21 @@ const CortheaAIPage: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex">
+    <div className="relative max-h-screen flex">
       {/* Sidebar component */}
       <ChatSidebar
         isSidebarOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onSidebarToggle={handleSidebarToggle} // Pass the toggle handler to the sidebar
       />
 
       {/* Page content, adjusting width based on sidebar state */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          isSidebarOpen ? "ml-64" : "ml-20" // Adjust left margin based on sidebar state
+          isSidebarOpen ? "mr-64" : "mr-20" // Adjust left margin based on sidebar state
         }`}
       >
-        {/* Header component with sidebar toggle */}
-        <ChatHeader onSidebarToggle={handleSidebarToggle} />
+        {/* Header component */}
+        <ChatHeader />
 
         <div className="flex-1 overflow-auto mt-16">
           {/* Chat window component with scrollable messages */}

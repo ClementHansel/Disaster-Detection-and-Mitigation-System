@@ -3,18 +3,21 @@
 import Link from "next/link";
 import {
   FaBars,
-  FaHome,
-  FaChartBar,
+  FaCommentDots, // Updated icon for Chats
+  FaTachometerAlt, // Updated icon for Insights
   FaCogs,
-  FaQuestionCircle,
+  FaInfoCircle, // Updated icon for FAQ
 } from "react-icons/fa";
 
 interface SidebarProps {
   isSidebarOpen: boolean;
-  onClose: () => void;
+  onSidebarToggle: () => void;
 }
 
-const ChatSidebar: React.FC<SidebarProps> = ({ isSidebarOpen, onClose }) => {
+const ChatSidebar: React.FC<SidebarProps> = ({
+  isSidebarOpen,
+  onSidebarToggle,
+}) => {
   return (
     <aside
       className={`h-screen bg-gray-900 text-white px-4 pt-20 pb-12 fixed top-0 right-0 transition-all duration-300 z-50 ${
@@ -27,13 +30,14 @@ const ChatSidebar: React.FC<SidebarProps> = ({ isSidebarOpen, onClose }) => {
           <span className="text-xl font-bold text-sm">Corthea AI</span>
         )}
         <button
-          onClick={onClose}
+          onClick={onSidebarToggle} // Toggle the sidebar when clicked
           className="p-2 hover:bg-gray-700 rounded"
-          title="Close Sidebar"
+          title="Toggle Sidebar"
         >
           <FaBars />
         </button>
       </div>
+
       {/* The nav occupies full height and is scrollable */}
       <nav className="overflow-y-auto h-full">
         <ul className="space-y-2 list-none">
@@ -41,20 +45,20 @@ const ChatSidebar: React.FC<SidebarProps> = ({ isSidebarOpen, onClose }) => {
             <Link
               href="/dashboard/cortheaAI"
               className="flex items-center space-x-2 p-2 hover:bg-gray-700 rounded"
-              title={!isSidebarOpen ? "Home" : ""}
+              title={!isSidebarOpen ? "Chats" : ""}
             >
-              <FaHome />
-              {isSidebarOpen && <span className="text-sm">Home</span>}
+              <FaCommentDots /> {/* Updated icon for Chats */}
+              {isSidebarOpen && <span className="text-sm">Chats</span>}
             </Link>
           </li>
           <li>
             <Link
               href="/dashboard/cortheaAI/analytics"
               className="flex items-center space-x-2 p-2 hover:bg-gray-700 rounded"
-              title={!isSidebarOpen ? "Analytics" : ""}
+              title={!isSidebarOpen ? "Insights" : ""}
             >
-              <FaChartBar />
-              {isSidebarOpen && <span className="text-sm">Analytics</span>}
+              <FaTachometerAlt /> {/* Updated icon for Insights */}
+              {isSidebarOpen && <span className="text-sm">Insights</span>}
             </Link>
           </li>
           <li>
@@ -71,10 +75,10 @@ const ChatSidebar: React.FC<SidebarProps> = ({ isSidebarOpen, onClose }) => {
             <Link
               href="/dashboard/cortheaAI/help"
               className="flex items-center space-x-2 p-2 hover:bg-gray-700 rounded"
-              title={!isSidebarOpen ? "Help" : ""}
+              title={!isSidebarOpen ? "FAQ" : ""}
             >
-              <FaQuestionCircle />
-              {isSidebarOpen && <span className="text-sm">Help</span>}
+              <FaInfoCircle /> {/* Updated icon for FAQ */}
+              {isSidebarOpen && <span className="text-sm">FAQ</span>}
             </Link>
           </li>
         </ul>

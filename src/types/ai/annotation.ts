@@ -38,6 +38,7 @@ export type AnnotationFilters = {
 };
 
 // Type for annotated dataset (used in lists, tables, or AI processing)
+// This is updated to support filtering annotations and matching them to raw sensor data
 export type AnnotatedData = {
   id: string;
   sensorId: string;
@@ -46,6 +47,7 @@ export type AnnotatedData = {
   value: number;
   unit: string;
   annotation?: Annotation; // Optional annotation if available
+  filters?: AnnotationFilters; // Optional filters that can be applied for the annotated section
 };
 
 // Type for AI-generated insights on annotations
