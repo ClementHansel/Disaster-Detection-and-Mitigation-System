@@ -1,40 +1,85 @@
-// 📌 File: src/components/ai/AIAnalysis.tsx
+import { useState, useEffect } from "react";
+import { getAIAnalysis } from "@/lib/ai/aiUtils";
+import { AIAnalysisResult } from "@/types/ai/annotation";
+import { mockSensorData } from "@/data/ai/mockData"; // ✅ Correct import
 
-import React, { useEffect, useState } from "react";
-import { DataPoint, AIAnalysisResult } from "@/types/ai";
-import { analyzeDataWithAI } from "@/lib/ai/aiUtils";
-
-interface AIAnalysisProps {
-  data: DataPoint[];
+interface Filters {
+  site: string;
+  sensor: string;
+  dateFrom: string;
+  dateTo: string;
+  timeFrom: string;
+  timeTo: string;
 }
 
-const AIAnalysis: React.FC<AIAnalysisProps> = ({ data }) => {
-  const [aiAnalysis, setAIAnalysis] = useState<AIAnalysisResult | null>(null);
+interface AIAnalysisProps {
+  filters: Filters;
+}
+
+export default function AIAnalysis({ filters }: AIAnalysisProps) {
+  const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (data.length > 0) {
-      analyzeDataWithAI(data).then((result: AIAnalysisResult) => {
-        setAIAnalysis(result);
-      });
-    }
-  }, [data]);
+    const fetchData = async () => {
+      setLoading(true);
 
-  if (!aiAnalysis) return <p>AI analysis in progress...</p>;
+      try {
+        // ✅ Properly filtering the mockSensorData array
+        const filteredData = mockSensorData.filter((data) => {
+          const timestamp = new Date(data.timestamp).getTime();
+          const dateFrom = new Date(
+            `${filters.dateFrom}T${filters.timeFrom}`
+          ).getTime();
+          const dateTo = new Date(
+            `${filters.dateTo}T${filters.timeTo}`
+          ).getTime();
+
+          return (
+            data.site === filters.site &&
+            data.sensorId === filters.sensor &&
+            timestamp >= dateFrom &&
+            timestamp <= dateTo
+          );
+        });
+
+        const result = await getAIAnalysis(filteredData); // Pass filtered data to AI analysis
+        setAnalysisResult(result);
+      } catch (error) {
+        console.error("Error fetching AI analysis:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [filters]);
 
   return (
-    <div className="mt-4 p-4 border rounded bg-gray-100">
-      <h2 className="text-xl font-semibold">AI Analysis</h2>
-      <p>
-        <strong>Summary:</strong> {aiAnalysis.summary}
-      </p>
-      <p>
-        <strong>Comparison:</strong> {aiAnalysis.comparison}
-      </p>
-      <p>
-        <strong>Conclusion:</strong> {aiAnalysis.conclusion}
-      </p>
+    <div className="p-4 bg-white shadow rounded-lg">
+      <h2 className="font-bold mb-2">AI Analysis</h2>
+
+      {loading ? (
+        <p className="text-gray-500">Loading AI analysis...</p>
+      ) : analysisResult ? (
+        <div>
+          <p>
+            <strong>Summary:</strong> {analysisResult.summary}
+          </p>
+          <p>
+            <strong>Comparison:</strong> {analysisResult.comparison}
+          </p>
+          <p>
+            <strong>Conclusion:</strong> {analysisResult.conclusion}
+          </p>
+        </div>
+      ) : (
+        <p className="text-gray-500">
+          No analysis available for the selected filters.
+        </p>
+      )}
     </div>
   );
-};
-
-export default AIAnalysis;
+}

@@ -1,5 +1,5 @@
 import { analyzeDataWithAI } from "../../lib/ai/aiUtils";
-import { DataPoint } from "../../types/ai";
+import { DataPoint } from "../../types/ai/annotation";
 
 export const analyzeData = async (
   data: DataPoint[]

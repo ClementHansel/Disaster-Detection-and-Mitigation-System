@@ -1,58 +1,59 @@
-// 📌 File: src/components/ai/Filters.tsx
-import { useState, useEffect } from "react";
-import { FilterOptions } from "@/types/ai";
-import { mockData } from "@/data/ai/mockData";
+import { useState, useEffect, useCallback } from "react";
+import { getAvailableSites, getAvailableSensors } from "@/lib/ai/aiDataUtils";
 
 interface FiltersProps {
-  filters: FilterOptions;
-  setFilters: (filters: FilterOptions) => void;
+  filters: {
+    site: string;
+    sensor: string;
+    dateFrom: string;
+    dateTo: string;
+    timeFrom: string;
+    timeTo: string;
+  };
+  onFilterChange: (filters: Partial<FiltersProps["filters"]>) => void;
 }
 
-const Filters: React.FC<FiltersProps> = ({ filters, setFilters }) => {
+export default function Filters({ filters, onFilterChange }: FiltersProps) {
   const [sites, setSites] = useState<string[]>([]);
   const [sensors, setSensors] = useState<string[]>([]);
 
+  // Memoized function to handle site change and reset sensor
+  const handleSiteChange = useCallback(
+    (site: string) => {
+      onFilterChange({ site, sensor: "" }); // Reset sensor when site changes
+    },
+    [onFilterChange]
+  );
+
   useEffect(() => {
-    // Extract unique site names
-    const uniqueSites = Array.from(new Set(mockData.map((item) => item.site)));
-    setSites(uniqueSites);
+    setSites(getAvailableSites());
   }, []);
 
   useEffect(() => {
-    if (filters.site) {
-      // Extract unique sensors for the selected site
-      const filteredSensors = Array.from(
-        new Set(
-          mockData
-            .filter((item) => item.site === filters.site)
-            .map((item) => item.sensor)
-        )
-      );
-      setSensors(filteredSensors);
-    } else {
-      setSensors([]);
-    }
+    setSensors(getAvailableSensors(filters.site));
   }, [filters.site]);
 
   return (
-    <div className="p-4 border rounded bg-white">
-      <h2 className="text-lg font-bold mb-2">Filters</h2>
+    <div className="p-4 bg-white rounded-lg shadow-md">
+      <h2 className="text-lg font-semibold">Filters</h2>
 
-      <div className="grid grid-cols-2 gap-4">
-        {/* Site Dropdown */}
+      <div className="flex flex-row space-x-6 justify-between">
         <div>
-          <label className="block text-sm font-medium" htmlFor="site">
-            Site
+          {/* Site Dropdown */}
+          <label
+            htmlFor="site-filter"
+            className="block mt-2 text-sm font-medium text-gray-700"
+          >
+            Site:
           </label>
           <select
-            id="site"
-            value={filters.site || ""}
-            onChange={(e) =>
-              setFilters({ ...filters, site: e.target.value, sensor: "" })
-            }
-            className="w-full p-2 border rounded"
+            id="site-filter"
+            aria-label="Select a site"
+            value={filters.site}
+            onChange={(e) => handleSiteChange(e.target.value)}
+            className="w-full mt-1 p-2 border rounded-lg"
           >
-            <option value="">Select a Site</option>
+            <option value="">All Sites</option>
             {sites.map((site) => (
               <option key={site} value={site}>
                 {site}
@@ -61,19 +62,27 @@ const Filters: React.FC<FiltersProps> = ({ filters, setFilters }) => {
           </select>
         </div>
 
-        {/* Sensor Dropdown */}
         <div>
-          <label className="block text-sm font-medium" htmlFor="sensor">
-            Sensor
+          {/* Sensor Dropdown */}
+          <label
+            htmlFor="sensor-filter"
+            className="block mt-2 text-sm font-medium text-gray-700"
+          >
+            Sensor:
           </label>
           <select
-            id="sensor"
-            value={filters.sensor || ""}
-            onChange={(e) => setFilters({ ...filters, sensor: e.target.value })}
-            className="w-full p-2 border rounded"
-            disabled={!filters.site} // Disable until a site is selected
+            id="sensor-filter"
+            aria-label="Select a sensor"
+            value={filters.sensor}
+            onChange={(e) => onFilterChange({ sensor: e.target.value })}
+            disabled={!filters.site || sensors.length === 0}
+            className={`w-full mt-1 p-2 border rounded-lg ${
+              !filters.site || sensors.length === 0
+                ? "bg-gray-200 cursor-not-allowed"
+                : ""
+            }`}
           >
-            <option value="">Select a Sensor</option>
+            <option value="">All Sensors</option>
             {sensors.map((sensor) => (
               <option key={sensor} value={sensor}>
                 {sensor}
@@ -82,77 +91,74 @@ const Filters: React.FC<FiltersProps> = ({ filters, setFilters }) => {
           </select>
         </div>
 
-        {/* Date & Time Pickers in Same Row */}
-        <div className="grid grid-cols-2 gap-4 col-span-2">
+        <div>
           {/* Date From */}
-          <div>
-            <label className="block text-sm font-medium" htmlFor="dateFrom">
-              Date From
-            </label>
-            <input
-              id="dateFrom"
-              type="date"
-              value={filters.dateFrom || ""}
-              onChange={(e) =>
-                setFilters({ ...filters, dateFrom: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          {/* Date To */}
-          <div>
-            <label className="block text-sm font-medium" htmlFor="dateTo">
-              Date To
-            </label>
-            <input
-              id="dateTo"
-              type="date"
-              value={filters.dateTo || ""}
-              onChange={(e) =>
-                setFilters({ ...filters, dateTo: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-          </div>
+          <label
+            htmlFor="date-from-filter"
+            className="block mt-2 text-sm font-medium text-gray-700"
+          >
+            Date From:
+          </label>
+          <input
+            id="date-from-filter"
+            type="date"
+            value={filters.dateFrom}
+            onChange={(e) => onFilterChange({ dateFrom: e.target.value })}
+            className="w-full mt-1 p-2 border rounded-lg"
+          />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 col-span-2">
-          {/* Time From */}
-          <div>
-            <label className="block text-sm font-medium" htmlFor="timeFrom">
-              Time From
-            </label>
-            <input
-              id="timeFrom"
-              type="time"
-              value={filters.timeFrom || ""}
-              onChange={(e) =>
-                setFilters({ ...filters, timeFrom: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-          </div>
+        <div>
+          {/* Date To */}
+          <label
+            htmlFor="date-to-filter"
+            className="block mt-2 text-sm font-medium text-gray-700"
+          >
+            Date To:
+          </label>
+          <input
+            id="date-to-filter"
+            type="date"
+            value={filters.dateTo}
+            onChange={(e) => onFilterChange({ dateTo: e.target.value })}
+            className="w-full mt-1 p-2 border rounded-lg"
+          />
+        </div>
 
+        <div>
+          {/* Time From */}
+          <label
+            htmlFor="time-from-filter"
+            className="block mt-2 text-sm font-medium text-gray-700"
+          >
+            Time From:
+          </label>
+          <input
+            id="time-from-filter"
+            type="time"
+            value={filters.timeFrom}
+            onChange={(e) => onFilterChange({ timeFrom: e.target.value })}
+            className="w-full mt-1 p-2 border rounded-lg"
+          />
+        </div>
+
+        <div>
           {/* Time To */}
-          <div>
-            <label className="block text-sm font-medium" htmlFor="timeTo">
-              Time To
-            </label>
-            <input
-              id="timeTo"
-              type="time"
-              value={filters.timeTo || ""}
-              onChange={(e) =>
-                setFilters({ ...filters, timeTo: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-          </div>
+          <label
+            htmlFor="time-to-filter"
+            className="block mt-2 text-sm font-medium text-gray-700"
+          >
+            Time To:
+          </label>
+          <input
+            id="time-to-filter"
+            type="time"
+            value={filters.timeTo}
+            onChange={(e) => onFilterChange({ timeTo: e.target.value })}
+            className="w-full mt-1 p-2 border rounded-lg"
+          />
         </div>
       </div>
     </div>
   );
-};
-
-export default Filters;
+}

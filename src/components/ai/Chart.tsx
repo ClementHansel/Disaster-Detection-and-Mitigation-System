@@ -1,62 +1,84 @@
-import React from "react";
+import { Line } from "react-chartjs-2";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
   Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { DataPoint } from "@/types/ai";
+  Legend,
+  CategoryScale,
+} from "chart.js";
+import { SensorData } from "@/types/ai/annotation";
+import { getFilteredSensorData } from "@/lib/ai/aiDataUtils";
 
-interface ChartProps {
-  data: DataPoint[];
-  site: string | null;
-  sensor: string | null;
+ChartJS.register(
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  CategoryScale
+);
+
+interface Filters {
+  site: string;
+  sensor: string;
+  dateFrom: string;
+  dateTo: string;
+  timeFrom: string;
+  timeTo: string;
 }
 
-const Chart: React.FC<ChartProps> = ({ data, site, sensor }) => {
-  if (!site || !sensor) {
-    return <p>Please select a site and sensor to view the chart.</p>;
-  }
+interface ChartProps {
+  filters: Filters;
+}
 
-  // Filter data based on selected site and sensor
-  const filteredData = data.filter(
-    (point) => point.site === site && point.sensor === sensor
-  );
+export default function Chart({ filters }: ChartProps) {
+  const data: SensorData[] = getFilteredSensorData(filters);
 
-  if (filteredData.length === 0) {
+  if (data.length === 0) {
     return (
       <p className="text-center text-gray-500">
-        No data available for this selection.
+        Please select a site and sensor to view the chart.
       </p>
     );
   }
 
+  const labels: string[] = data.map((entry) => entry.timestamp);
+  const values: number[] = data.map((entry) => entry.value);
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        label: "Sensor Readings",
+        data: values,
+        borderColor: "rgba(75, 192, 192, 1)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        fill: true,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+      },
+    },
+    scales: {
+      x: { title: { display: true, text: "Timestamp" } },
+      y: { title: { display: true, text: "Value" } },
+    },
+  };
+
   return (
-    <div className="p-4 border rounded bg-white">
-      <h2 className="text-lg font-bold mb-2 text-center">{`Sensor Data: ${sensor} at ${site}`}</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={filteredData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="timestamp"
-            tickFormatter={(time) => new Date(time).toLocaleString()}
-          />
-          <YAxis domain={["auto", "auto"]} />
-          <Tooltip />
-          <Line
-            type="monotone"
-            dataKey="sensorValue" // Ensure this matches your mock data
-            stroke="#8884d8"
-            strokeWidth={2}
-            dot={{ r: 3 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="w-full h-[400px] p-4 bg-white shadow rounded-lg">
+      <Line data={chartData} options={options} />
     </div>
   );
-};
-
-export default Chart;
+}

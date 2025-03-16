@@ -1,76 +1,64 @@
 "use client";
-
-import React, { useState } from "react";
-import Link from "next/link";
-import { mockData } from "@/data/ai/mockData";
-import { FilterOptions, DataPoint } from "@/types/ai";
-import { filterData } from "@/lib/ai/dataUtils";
+import { useState, useCallback } from "react";
 import Filters from "@/components/ai/Filters";
-import AIAnalysis from "@/components/ai/AIAnalysis";
 import Chart from "@/components/ai/Chart";
+import AIAnalysis from "@/components/ai/AIAnalysis";
+import Annotate from "@/components/ai/Annotate";
+import AnnotatedList from "@/components/ai/AnnotatedList";
 
-const AnnotationPage = () => {
-  const [filters, setFilters] = useState<FilterOptions>({
-    site: null,
-    sensor: null,
-    dateFrom: null,
-    dateTo: null,
-    timeFrom: null,
-    timeTo: null,
+export default function AnnotationPage() {
+  const [filters, setFilters] = useState({
+    site: "",
+    sensor: "",
+    dateFrom: "",
+    dateTo: "",
+    timeFrom: "",
+    timeTo: "",
   });
 
-  const filteredAnnotations: DataPoint[] = filterData(
-    mockData,
-    filters.site,
-    filters.sensor,
-    filters.dateFrom,
-    filters.dateTo,
-    filters.timeFrom,
-    filters.timeTo
+  // Memoized filter update to avoid unnecessary re-renders
+  const handleFilterChange = useCallback(
+    (newFilters: Partial<typeof filters>) => {
+      setFilters((prev) => ({ ...prev, ...newFilters }));
+    },
+    []
   );
-
-  // ✅ Fix: Ensure each sensor appears only once
-  const uniqueSensors = new Set<string>();
-  const sensorList = filteredAnnotations.filter((annotation) => {
-    if (!uniqueSensors.has(annotation.sensor)) {
-      uniqueSensors.add(annotation.sensor);
-      return true;
-    }
-    return false;
-  });
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Annotations</h1>
+    <div className="p-8 space-y-8 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-semibold text-gray-900">Annotation Page</h1>
 
-      <Filters filters={filters} setFilters={setFilters} />
+      {/* Filters Section */}
+      <div className="bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-xl font-medium text-gray-700 mb-4">Filters</h2>
+        <Filters filters={filters} onFilterChange={handleFilterChange} />
+      </div>
 
-      {filters.site && filters.sensor ? (
-        <>
-          <Chart
-            data={filteredAnnotations}
-            site={filters.site}
-            sensor={filters.sensor}
-          />
-          <AIAnalysis data={filteredAnnotations} />
-        </>
-      ) : (
-        <p>Please select a site and sensor to view data.</p>
-      )}
+      {/* Chart Section */}
+      <div className="bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-xl font-medium text-gray-700 mb-4">Chart</h2>
+        <Chart filters={filters} />
+      </div>
 
-      <ul>
-        {sensorList.map((annotation) => (
-          <li key={annotation.sensor} className="border p-4 rounded mb-2">
-            <Link href={`/dashboard/annotation/${annotation.sensor}`}>
-              <span className="text-blue-500 cursor-pointer">
-                {annotation.site} - {annotation.sensor}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {/* AI Analysis Section */}
+      <div className="bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-xl font-medium text-gray-700 mb-4">AI Analysis</h2>
+        <AIAnalysis filters={filters} />
+      </div>
+
+      {/* Annotation Section */}
+      <div className="bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-xl font-medium text-gray-700 mb-4">Annotation</h2>
+        <Annotate filters={filters} />
+      </div>
+
+      {/* Annotated List Section */}
+      <div className="bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-xl font-medium text-gray-700 mb-4">
+          Annotated List
+        </h2>
+        <AnnotatedList filters={filters} />
+      </div>
     </div>
   );
-};
-
-export default AnnotationPage;
+}

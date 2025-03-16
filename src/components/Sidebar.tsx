@@ -137,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, toggleSidebar }) => {
           </li>
           <li>
             <Link
-              href="/corthea-ai"
+              href="/dashboard/cortheaAI"
               className="flex items-center space-x-2 p-2 hover:bg-gray-700 rounded"
               title={!isExpanded ? "Corthea AI" : ""}
             >
